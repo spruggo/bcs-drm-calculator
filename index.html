@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCS Combat DRM Calculator</title>
+    <style>
+        body {
+    font-family: sans-serif;
+    background-color: #dff5d8;
+    padding: 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,.18);
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    background: #4f7d4f;
+    color: white;
+}
+
+button:hover {
+    background: #3d633d;
+}
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #ddd; vertical-align: top; }
+        th { background-color: #eee; }
+        .side-title { font-weight: bold; font-size: 1.2em; background-color: #f9f9f9; }
+        input[type="number"] { width: 50px; padding: 5px; }
+        .modifier-group { margin-bottom: 10px; }
+        label { display: block; margin-bottom: 5px; cursor: pointer; }
+        .result-box { text-align: center; padding: 20px; margin-top: 20px; background: #e9ecef; border-radius: 8px; }
+        #final-drm { font-size: 2em; font-weight: bold; color: #d9534f; }
+        .net-ar { font-size: 1.2em; font-weight: bold; color: #337ab7; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>BCS Combat DRM Calculator v0.3</h1>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Action Rating (AR)</th>
+                <th>Modifiers</th>
+                <th>Net AR Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- ATTACKER SECTION -->
+            <tr class="side-title"><td colspan="3">Attacker</td></tr>
+            <tr>
+                <td>
+                    <label for="att-ar">Attacker AR:</label>
+                    <input type="number" id="att-ar" value="3" min="0" max="5" oninput="calculate()">
+                </td>
+                <td>
+                    <div class="modifier-group">
+                        <strong>Common Modifiers:</strong>
+                        <label><input type="checkbox" class="att-mod" data-val="1"> Dual or RED Support (+1)</label>
+                        <label><input type="checkbox" class="att-mod" data-val="-1"> MSR Blocked (-1)</label>
+                    </div>
+                    <div class="modifier-group">
+                        <strong>Attacker-Only:</strong>
+                        <label><input type="checkbox" class="att-mod" data-val="1"> Double OBJ Zone (+1)</label>
+                        <label><input type="checkbox" class="att-mod" data-val="-1"> Formation in Prep Def (-1)</label>
+                        <label><input type="checkbox" class="att-mod" data-val="2"> Suppression (Regular) (+2)</label>
+                        <label><input type="checkbox" class="att-mod" data-val="1"> Suppression (Shock) (+1)</label>
+                        <label><input type="checkbox" class="att-mod" data-val="1"> Assist (Regular Only) (+1)</label>
+                        <label><input type="checkbox" class="att-mod" data-val="2"> Attack from Off-Map (+2)</label>
+                        <hr>
+                        <label><input type="checkbox" class="att-mod" data-val="1"> Shock preceded by Fire (+1)</label>
+                        <label><input type="radio" name="shock-type" class="att-mod-radio" data-val="0" checked onchange="calculate()"> No Shock AV Bonus</label>
+                        <label><input type="radio" name="shock-type" class="att-mod-radio" data-val="1" onchange="calculate()"> Shock: Hard Red (+1)</label>
+                        <label><input type="radio" name="shock-type" class="att-mod-radio" data-val="2" onchange="calculate()"> Shock: Breakthrough (+2)</label>
+                        
+                    </div>
+                </td>
+                <td>
+                    <div class="net-ar">Net Attacker AR: <span id="att-net">3</span></div>
+                </td>
+            </tr>
+
+            <!-- DEFENDER SECTION -->
+            <tr class="side-title"><td colspan="3">Defender</td></tr>
+            <tr>
+                <td>
+                    <label for="def-ar">Defender AR:</label>
+                    <input type="number" id="def-ar" value="3" min="0" max="5" oninput="calculate()">
+                </td>
+                <td>
+                    <div class="modifier-group">
+                        <strong>Common Modifiers:</strong>
+                        <label><input type="checkbox" class="def-mod" data-val="1"> Dual or ANY Support (+1)</label>
+                        <label><input type="checkbox" class="def-mod" data-val="-1"> MSR Blocked (-1)</label>
+                    </div>
+                    <div class="modifier-group">
+                        <strong>Defender-Only:</strong>
+                        <label><input type="checkbox" class="def-mod" data-val="1"> Prepared Defense (+1)</label>
+                        <label><input type="radio" name="stacking" class="def-mod-radio" data-val="1" onchange="calculate()"> Exactly 2 Combat Units (+1)</label>
+                        <label><input type="radio" name="stacking" class="def-mod-radio" data-val="-2" onchange="calculate()"> Over-stacked (>2 units) (-2)</label>
+                        <label><input type="radio" name="stacking" class="def-mod-radio" data-val="0" checked onchange="calculate()"> 1 Unit (No bonus)</label>
+                        <hr>
+                        <label><input type="checkbox" class="def-mod" data-val="1"> Cross Hexside Terrain (+1)</label>
+                        <label><input type="radio" name="terrain" class="def-mod-radio" data-val="0" checked onchange="calculate()"> Open Hex (+0)</label>
+                        <label><input type="radio" name="terrain" class="def-mod-radio" data-val="1" onchange="calculate()"> Terrain Hex / City (+1)</label>
+                        <label><input type="radio" name="terrain" class="def-mod-radio" data-val="2" onchange="calculate()"> Urban Hex (+2)</label>
+                        <hr>
+                        <label><input type="checkbox" class="def-mod" data-val="2"> Hard Red in Open (+2)</label>
+                        <label><input type="checkbox" class="def-mod" data-val="-3"> AV Unit in Urban (-3)</label>
+                    </div>
+                </td>
+                <td>
+                    <div class="net-ar">Net Defender AR: <span id="def-net">3</span></div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="result-box">
+        <div>Final Combat Table DRM</div>
+        <div id="final-drm">0</div>
+        <small>(Attacker Net AR - Defender Net AR)</small>
+    </div>
+
+    <div style="text-align:center; margin-top:20px;">
+    <button onclick="resetCalculator()">Reset Calculator</button>
+</div>
+
+</div>
+
+<script>
+    function calculate() {
+        // Attacker Calculation
+        let attAr = parseInt(document.getElementById('att-ar').value) || 0;
+        let attMods = 0;
+        document.querySelectorAll('.att-mod:checked').forEach(c => attMods += parseInt(c.dataset.val));
+        document.querySelectorAll('.att-mod-radio:checked').forEach(r => attMods += parseInt(r.dataset.val));
+        let attNet = attAr + attMods;
+        document.getElementById('att-net').innerText = attNet;
+
+        // Defender Calculation
+        let defAr = parseInt(document.getElementById('def-ar').value) || 0;
+        let defMods = 0;
+        document.querySelectorAll('.def-mod:checked').forEach(c => defMods += parseInt(c.dataset.val));
+        document.querySelectorAll('.def-mod-radio:checked').forEach(r => defMods += parseInt(r.dataset.val));
+        let defNet = defAr + defMods;
+        document.getElementById('def-net').innerText = defNet;
+
+        // Final DRM
+        let finalDrm = attNet - defNet;
+        document.getElementById('final-drm').innerText = (finalDrm > 0 ? "+" : "") + finalDrm;
+    }
+    function resetCalculator() {
+
+    // Reset AR values
+    document.getElementById('att-ar').value = 3;
+    document.getElementById('def-ar').value = 3;
+
+    // Clear all checkboxes
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+    });
+
+    // Reset all radio groups to their default selections
+    document.querySelectorAll('input[type="radio"]').forEach(r => {
+        r.checked = r.defaultChecked;
+    });
+
+    calculate();
+}
+
+    // Initialize
+    window.onload = calculate;
+    document.querySelectorAll('input[type="checkbox"]').forEach(i => i.onchange = calculate);
+</script>
+
+</body>
+</html>
